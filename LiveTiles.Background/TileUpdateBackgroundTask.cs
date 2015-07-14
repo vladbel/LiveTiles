@@ -24,39 +24,73 @@ namespace LiveTiles.Background
             // while asynchronous code is still running.
             BackgroundTaskDeferral deferral = taskInstance.GetDeferral();
 
-            // Download the feed.
-            var feed = await GetMSDNBlogFeed();
+            //get tile view model
+            var viewModel = await GetTileViewModel();
 
             // Update the live tile with the feed items.
-            UpdateTile(feed);
+            viewModel.UpdateTile();
 
             // Inform the system that the task is finished.
             deferral.Complete();
         }
 
-        private static async Task<SyndicationFeed> GetMSDNBlogFeed()
+        private static async Task<ITileViewModel> GetTileViewModel()
         {
-            SyndicationFeed feed = null;
 
-            try
-            {
-                // Create a syndication client that downloads the feed.  
-                SyndicationClient client = new SyndicationClient();
-                client.BypassCacheOnRetrieve = true;
-                client.SetRequestHeader(customHeaderName, customHeaderValue);
+            return new TileSquareTextViewModel();
 
-                // Download the feed. 
-                feed = await client.RetrieveFeedAsync(new Uri(feedUrl));
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.ToString());
-            }
+            //return new TileWideImageAndTextViewModel();
 
-            return feed;
         }
 
-        private static void UpdateTile(SyndicationFeed feed)
+    }
+
+    public interface ITileViewModel
+    {
+        string BackgroundImage { get; }
+        string Badge { get; }
+        string[] Notifications { get; }
+
+        void UpdateTile();
+    }
+
+    public sealed class TileSquareTextViewModel : ITileViewModel
+    {
+        private int _invocationCount;
+
+        public TileSquareTextViewModel()
+        {
+            this._invocationCount = DateTime.Now.Second;
+        }
+
+        public string BackgroundImage
+        {
+            get
+            {
+                return "";
+            }
+        }
+
+        public string Badge
+        {
+            get
+            {
+                return (++_invocationCount).ToString();
+            }
+        }
+
+        public string[] Notifications
+        {
+            get
+            {
+                string[] result = { String.Format("First: {0} ", (++_invocationCount).ToString()), 
+                                    String.Format("Mid: {0} ", (++_invocationCount).ToString()), 
+                                    String.Format("End: {0} ", (++_invocationCount).ToString()) };
+                return result;
+            }
+        }
+
+        public void UpdateTile()
         {
             // Create a tile update manager for the specified syndication feed.
             var updater = TileUpdateManager.CreateTileUpdaterForApplication();
@@ -67,12 +101,19 @@ namespace LiveTiles.Background
             int itemCount = 0;
 
             // Create a tile notification for each feed item.
-            foreach (var item in feed.Items)
+            var notifications = this.Notifications;
+            foreach (var item in notifications)
             {
-                XmlDocument tileXml = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Block);
-                var title = item.Title;
-                string titleText = title.Text == null ? String.Empty : title.Text;
-                tileXml.GetElementsByTagName(textElementName)[0].InnerText = titleText;
+
+                // XmlDocument tileXml = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Block); // works
+
+                XmlDocument tileXml = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Text01); //  works
+
+                //XmlDocument tileXml = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310ImageAndText01); // NOT
+
+                //XmlDocument tileXml = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150ImageAndText02);
+
+                tileXml.GetElementsByTagName("text")[0].InnerText = item;
 
                 // Create a new tile notification. 
                 updater.Update(new TileNotification(tileXml));
@@ -81,14 +122,69 @@ namespace LiveTiles.Background
                 if (itemCount++ > 5) break;
             }
         }
+    }
 
-        // Although most HTTP servers do not require User-Agent header, others will reject the request or return 
-        // a different response if this header is missing. Use SetRequestHeader() to add custom headers. 
-        static string customHeaderName = "User-Agent";
-        static string customHeaderValue = "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)";
+    public sealed class TileWideImageAndTextViewModel : ITileViewModel
+    {
+        private int _invocationCount;
 
-        static string textElementName = "text";
-        static string feedUrl = @"http://blogs.msdn.com/b/MainFeed.aspx?Type=BlogsOnly";
+        public TileWideImageAndTextViewModel()
+        {
+            this._invocationCount = DateTime.Now.Second;
+        }
 
+        public string BackgroundImage
+        {
+            get
+            {
+                return "Assets\\WideLogo.scale-100.png";
+            }
+        }
+
+        public string Badge
+        {
+            get
+            {
+                return (++_invocationCount).ToString();
+            }
+        }
+
+        public string[] Notifications
+        {
+            get
+            {
+                string[] result = { String.Format("First: {0} ", (++_invocationCount).ToString()), 
+                                    String.Format("Mid: {0} ", (++_invocationCount).ToString()), 
+                                    String.Format("End: {0} ", (++_invocationCount).ToString()) };
+                return result;
+            }
+        }
+
+        public void UpdateTile()
+        {
+            // Create a tile update manager for the specified syndication feed.
+            var updater = TileUpdateManager.CreateTileUpdaterForApplication();
+            updater.EnableNotificationQueue(true);
+            updater.Clear();
+
+            // Keep track of the number feed items that get tile notifications. 
+            int itemCount = 0;
+
+            // Create a tile notification for each feed item.
+            var notifications = this.Notifications;
+
+
+            XmlDocument tileXml = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150ImageAndText01);
+            tileXml.GetElementsByTagName("text")[0].InnerText = this.Notifications[0];
+
+            var tileImage = tileXml.GetElementsByTagName("image")[0] as XmlElement;
+            tileImage.SetAttribute("src", "ms-appx:///Assets/WideLogo.scale-100.png");
+
+            // Create a new tile notification. 
+            updater.Update(new TileNotification(tileXml));
+
+
+
+        }
     }
 }
