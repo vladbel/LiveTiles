@@ -16,6 +16,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
+using System.Threading.Tasks;
+using Windows.ApplicationModel.Background;
+
 // The Blank Application template is documented at http://go.microsoft.com/fwlink/?LinkId=391641
 
 namespace LiveTiles
@@ -99,6 +102,8 @@ namespace LiveTiles
 
             // Ensure the current window is active
             Window.Current.Activate();
+
+            this.InitializeTileUpdateBackgroundTaskAsync();
         }
 
         /// <summary>
@@ -126,6 +131,56 @@ namespace LiveTiles
 
             // TODO: Save application state and stop any background activity
             deferral.Complete();
+        }
+
+        private async Task InitializeTileUpdateBackgroundTaskAsync()
+        {
+            var backgroundAccessStatus = await BackgroundExecutionManager.RequestAccessAsync();
+
+            var trigger = new Windows.ApplicationModel.Background.TimeTrigger(15,false);
+            var conditions = new IBackgroundCondition[]
+            {
+                new SystemCondition(SystemConditionType.InternetAvailable)
+            };
+            try
+            {
+                var task = RegisterBackgroundTask("TileUpdate", 
+                    typeof(LiveTiles.Background.TileUpdateBackgroundTask).FullName, trigger, conditions);
+
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("{0}: {1}", "");
+            }
+        }
+
+        private static IBackgroundTaskRegistration RegisterBackgroundTask(string name, string entryPoint, IBackgroundTrigger trigger,
+                                        IBackgroundCondition[] conditions = null)
+        {
+            foreach (var task in BackgroundTaskRegistration.AllTasks.Values)
+            {
+                if (task.Name == name)
+                {
+                    return task;
+                }
+            }
+
+            var builder = new BackgroundTaskBuilder
+            {
+                Name = name,
+                TaskEntryPoint = entryPoint
+            };
+            builder.SetTrigger(trigger);
+
+            if (conditions != null)
+            {
+                foreach (var condition in conditions)
+                {
+                    builder.AddCondition(condition);
+                }
+            }
+
+            return builder.Register();
         }
     }
 }
