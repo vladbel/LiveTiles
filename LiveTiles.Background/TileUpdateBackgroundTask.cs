@@ -37,9 +37,9 @@ namespace LiveTiles.Background
         private static async Task<ITileViewModel> GetTileViewModel()
         {
 
-            return new TileSquareTextViewModel();
+            //return new TileSquareTextViewModel();
 
-            //return new TileWideImageAndTextViewModel();
+            return new TileWideImageAndTextViewModel();
 
         }
 
