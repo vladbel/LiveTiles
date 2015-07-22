@@ -28,7 +28,10 @@ namespace LiveTiles.Background
             var data = await GetTileData();
 
             // Update the live tile with the feed items.
-            IApplicationTilesViewModel tile = new ApplicationTilesViewModel( new Tile71x71() ,new Tile150x150(), new Tile310x150());
+            //IApplicationTilesViewModel tile = new ApplicationTilesViewModel( new Tile71x71() ,new Tile150x150(), new Tile310x150());
+            IApplicationTilesViewModel tile = new ApplicationTilesViewModel(new Tile71x71(data), 
+                                                                            new TileSquare150x150PeekImageAndText01(data),
+                                                                            new TileWide310x150PeekImageAndText02(data));
             tile.UpdateTiles(data);
 
             var badge = new BadgeViewModel();
@@ -123,9 +126,9 @@ namespace LiveTiles.Background
         {
 
             return String.Format(TILE_XML, 
-                                this._small71x71.GetBindingTemplateXml(data), 
-                                this._square150x150.GetBindingTemplateXml(data), 
-                                this._wide310x150.GetBindingTemplateXml(data));
+                                this._small71x71.XmlString,
+                                this._square150x150.XmlString, 
+                                this._wide310x150.XmlString);
         }
 
         public void UpdateTiles(ITileDataModel data)
@@ -164,7 +167,8 @@ namespace LiveTiles.Background
 
     public interface ITileBindingTemplate
     {
-        string GetBindingTemplateXml(ITileDataModel data);
+        XmlElement XmlElement {get;}
+        string XmlString { get; }
     }
 
     public sealed class Tile71x71 : ITileBindingTemplate
@@ -178,9 +182,19 @@ namespace LiveTiles.Background
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public string GetBindingTemplateXml(ITileDataModel data)
+        public  Tile71x71(ITileDataModel data)
         {
-            return String.Format(_bindingTemplateXml, data.SmallImage);
+            _bindingTemplateXml = String.Format(_bindingTemplateXml, data.SmallImage);
+        }
+
+        public XmlElement XmlElement
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public string XmlString
+        {
+            get { return this._bindingTemplateXml; }
         }
     }
 
@@ -199,6 +213,16 @@ namespace LiveTiles.Background
         {
             return  String.Format(_bindingTemplateXml, _tile, data.SquareImage);
         }
+
+        public XmlElement XmlElement
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public string XmlString
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 
     public sealed class Tile310x150 : ITileBindingTemplate
@@ -215,6 +239,167 @@ namespace LiveTiles.Background
         public string GetBindingTemplateXml(ITileDataModel data)
         {
             return  String.Format(_bindingTemplateXml, _tile, data.WideImage);
+        }
+
+        public XmlElement XmlElement
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public string XmlString
+        {
+            get { throw new NotImplementedException(); }
+        }
+    }
+
+    public sealed class TileSquare71x71Image : ITileBindingTemplate
+    {
+        private ITileBindingTemplate _builder;
+
+        public TileSquare71x71Image (ITileDataModel data)
+        {
+            this._builder = new TileBindingTemplateBuilder(TileTemplateType.TileSquareImage, 
+                                                            null, 
+                                                            data.SmallImage);
+        }
+
+        public string GetBindingTemplateXml(ITileDataModel data)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public XmlElement XmlElement
+        {
+            get { return _builder.XmlElement;  }
+        }
+
+        public string XmlString
+        {
+            get { return _builder.XmlElement.GetXml(); }
+        }
+    }
+
+    public sealed class TileSquare150x150PeekImageAndText01 : ITileBindingTemplate
+    {
+        private ITileBindingTemplate _builder;
+
+        public TileSquare150x150PeekImageAndText01(ITileDataModel data)
+        {
+            this._builder = new TileBindingTemplateBuilder(TileTemplateType.TileSquare150x150PeekImageAndText01, 
+                                                            data.Notifications, 
+                                                            data.SquareImage);
+        }
+
+        public string GetBindingTemplateXml(ITileDataModel data)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public XmlElement XmlElement
+        {
+            get { return _builder.XmlElement;  }
+        }
+
+        public string XmlString
+        {
+            get { return _builder.XmlElement.GetXml(); }
+        }
+    }
+
+    public sealed class TileWide310x150PeekImageAndText02 : ITileBindingTemplate
+    {
+        private ITileBindingTemplate _builder;
+
+        public TileWide310x150PeekImageAndText02(ITileDataModel data)
+        {
+            this._builder = new TileBindingTemplateBuilder(TileTemplateType.TileWide310x150PeekImageAndText02, 
+                                                            data.Notifications, 
+                                                            data.WideImage);
+        }
+
+        public string GetBindingTemplateXml(ITileDataModel data)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public XmlElement XmlElement
+        {
+            get { return _builder.XmlElement;  }
+        }
+
+        public string XmlString
+        {
+            get { return _builder.XmlElement.GetXml(); }
+        }
+    }
+
+    public sealed class TileBindingTemplateBuilder: ITileBindingTemplate
+    {
+        private XmlElement _bindingXmlElement;
+
+        
+        public TileBindingTemplateBuilder(TileTemplateType tileTemplateteType,
+                                            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray()] string[] notifications, 
+                                            string imageSource)
+        {
+            var tileXmlDocument = TileUpdateManager.GetTemplateContent(tileTemplateteType);
+
+            var bindingXmlElements = tileXmlDocument.GetElementsByTagName("binding");
+
+            
+            if (bindingXmlElements == null || bindingXmlElements.Count != 1)
+            {
+                throw new Exception("Invalid binding template");
+            }
+
+            var bindingXmlElement = (XmlElement)bindingXmlElements[0];
+
+            this.SetImage(bindingXmlElement, imageSource);
+            this.SetText(bindingXmlElement, notifications);
+
+            System.Diagnostics.Debug.WriteLine(bindingXmlElement.GetXml());
+            this._bindingXmlElement = bindingXmlElement;
+        }
+
+        private void SetImage(XmlElement binding, string imageSource)
+        {
+            var imageElements = binding.GetElementsByTagName("image");
+            var imageSourceAttribute = imageElements[0].Attributes.GetNamedItem("src");
+            imageSourceAttribute.NodeValue = imageSource;
+        }
+
+        private void SetText (XmlElement binding, string[] notifications)
+        {
+            var textElements = binding.GetElementsByTagName("text");
+
+            if (textElements == null || textElements.Count == 0)
+            {
+                return;
+            }
+
+            for (var i = 0; i < Math.Min(4, notifications.Length); i++)
+            {
+                textElements[i].InnerText = notifications[i];
+            }
+        }
+
+
+        public string GetBindingTemplateXml(ITileDataModel data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public XmlElement XmlElement
+        {
+            get { return this._bindingXmlElement; }
+        }
+
+        public string XmlString
+        {
+            get { return this._bindingXmlElement.GetXml(); }
         }
     }
 
