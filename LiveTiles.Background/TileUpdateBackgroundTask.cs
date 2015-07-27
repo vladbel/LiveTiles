@@ -46,9 +46,9 @@ namespace LiveTiles.Background
 
             ITileDataModel tileDataModel = new TileDataModel
             {
-                SmallImage = "ms-appx:///Assets/Square71x71Logo.png",
-                SquareImage = "ms-appx:///Assets/Square150x150Logo.png",
-                WideImage = "ms-appx:///Assets/WideLogo.scale-100.png",
+                SmallImage = "ms-appx:///Assets/AppIcons/LiveTiles/Square71x71Logo.scale-100.png",
+                SquareImage = "ms-appx:///Assets/AppIcons/LiveTiles/Square150x150Logo.scale-100.png",
+                WideImage = "ms-appx:///Assets/AppIcons/LiveTiles/Wide310x150Logo.scale-100.png",
                 Badge = "6",
                 Notifications = new string[] { "1.1: foo", "2.2: bar" }
             };
@@ -154,8 +154,13 @@ namespace LiveTiles.Background
     {
         public void UpdateBadge(ITileDataModel data)
         {
-            string tileXmlString01 = "<badge version='1' value='" + data.Badge + "'/>";
-
+            int badgeValue = 0;
+            if ( data.Badge == null|| 
+                !int.TryParse(data.Badge, out badgeValue))
+            {
+                return;
+            }
+            string tileXmlString01 = "<badge version='1' value='" + badgeValue.ToString() + "'/>";
 
 
             // Create a new tile notification. 
@@ -176,9 +181,9 @@ namespace LiveTiles.Background
         private string _bindingTemplateXml = "<binding template='TileSquare71x71Image'><image id='1' src='{0}' alt='Gray image'/></binding>";
 
         /// <summary>
-        ///                         <binding template='TileSquare71x71Image'>
-        ///                            <image id='1' src='ms-appx:///Assets/Square71x71Logo.png' alt='Gray image'/>
-        ///                        </binding>
+        ///     <binding template='TileSquare71x71Image'>
+        ///         <image id='1' src='ms-appx:///Assets/Square71x71Logo.png' alt='Gray image'/>
+        ///     </binding>
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
@@ -195,88 +200,6 @@ namespace LiveTiles.Background
         public string XmlString
         {
             get { return this._bindingTemplateXml; }
-        }
-    }
-
-    public sealed class Tile150x150 : ITileBindingTemplate
-    {
-        private const string _tile = "TileSquare150x150PeekImageAndText01";
-        private const string _bindingTemplateXml = @"<binding template='{0}' fallback='TileSquareImage'>
-<image id='1' src='{1}' alt='Gray image'/>
-<text id='1'>Tile text line 1</text>
-<text id='2'>Tile text line 2</text>
-<text id='3'>Tile text line 3</text>
-<text id='4'>Tile text line 4</text>
-</binding>";
-
-        public string GetBindingTemplateXml(ITileDataModel data)
-        {
-            return  String.Format(_bindingTemplateXml, _tile, data.SquareImage);
-        }
-
-        public XmlElement XmlElement
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public string XmlString
-        {
-            get { throw new NotImplementedException(); }
-        }
-    }
-
-    public sealed class Tile310x150 : ITileBindingTemplate
-    {
-        private const string _tile = "TileWide310x150PeekImageAndText02";
-        private const string _bindingTemplateXml = @"<binding template='{0}' fallback='TileWideImageAndText01'>
-                    <image id='1' src='{1}' alt='Gray image'/>
-                    <text id='1'>Tile text line 1</text>
-                    <text id='2'>Tile text line 2</text>
-                    <text id='3'>Tile text line 3</text>
-                    <text id='4'>Tile text line 4</text>
-                </binding>";
-
-        public string GetBindingTemplateXml(ITileDataModel data)
-        {
-            return  String.Format(_bindingTemplateXml, _tile, data.WideImage);
-        }
-
-        public XmlElement XmlElement
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public string XmlString
-        {
-            get { throw new NotImplementedException(); }
-        }
-    }
-
-    public sealed class TileSquare71x71Image : ITileBindingTemplate
-    {
-        private ITileBindingTemplate _builder;
-
-        public TileSquare71x71Image (ITileDataModel data)
-        {
-            this._builder = new TileBindingTemplateBuilder(TileTemplateType.TileSquareImage, 
-                                                            null, 
-                                                            data.SmallImage);
-        }
-
-        public string GetBindingTemplateXml(ITileDataModel data)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public XmlElement XmlElement
-        {
-            get { return _builder.XmlElement;  }
-        }
-
-        public string XmlString
-        {
-            get { return _builder.XmlElement.GetXml(); }
         }
     }
 

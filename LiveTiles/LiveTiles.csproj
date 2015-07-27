@@ -100,6 +100,30 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\AppIcons\BadgeLogo\Badge.scale-100.png" />
+    <Content Include="Assets\AppIcons\BadgeLogo\Badge.scale-140.png" />
+    <Content Include="Assets\AppIcons\BadgeLogo\Badge.scale-240.png" />
+    <Content Include="Assets\AppIcons\LiveTiles\Square150x150Logo.scale-100.png" />
+    <Content Include="Assets\AppIcons\LiveTiles\Square71x71Logo.scale-100.png" />
+    <Content Include="Assets\AppIcons\LiveTiles\Wide310x150Logo.scale-100.png" />
+    <Content Include="Assets\AppIcons\Store\Badge.scale-100.png" />
+    <Content Include="Assets\AppIcons\Store\Badge.scale-140.png" />
+    <Content Include="Assets\AppIcons\Store\Badge.scale-240.png" />
+    <Content Include="Assets\AppIcons\Store\Logo.scale-100.png" />
+    <Content Include="Assets\AppIcons\Store\Logo.scale-140.png" />
+    <Content Include="Assets\AppIcons\Store\Logo.scale-240.png" />
+    <Content Include="Assets\AppIcons\Store\SmallLogo.scale-100.png" />
+    <Content Include="Assets\AppIcons\Store\SmallLogo.scale-140.png" />
+    <Content Include="Assets\AppIcons\Store\SmallLogo.scale-240.png" />
+    <Content Include="Assets\AppIcons\Store\Square71x71Logo.scale-100.png" />
+    <Content Include="Assets\AppIcons\Store\Square71x71Logo.scale-140.png" />
+    <Content Include="Assets\AppIcons\Store\Square71x71Logo.scale-240.png" />
+    <Content Include="Assets\AppIcons\Store\StoreLogo.scale-100.png" />
+    <Content Include="Assets\AppIcons\Store\StoreLogo.scale-140.png" />
+    <Content Include="Assets\AppIcons\Store\StoreLogo.scale-240.png" />
+    <Content Include="Assets\AppIcons\Store\WideLogo.scale-100.png" />
+    <Content Include="Assets\AppIcons\Store\WideLogo.scale-140.png" />
+    <Content Include="Assets\AppIcons\Store\WideLogo.scale-240.png" />
     <Content Include="Assets\Badge.scale-100.png" />
     <Content Include="Assets\Badge.scale-140.png" />
     <Content Include="Assets\Badge.scale-240.png" />
@@ -123,6 +147,7 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>
   </PropertyGroup>
